@@ -4,13 +4,14 @@ import java.util.Arrays;
 
 public class AES {
 	//cipher key
+	/*
 	private static final byte[] CK = { 
-	        /*(byte)0x2B, (byte)0x28, (byte)0xAB, (byte)0x09,
-	        (byte)0x7E, (byte)0xAE, (byte)0xF7, (byte)0xCF, 
-	        (byte)0x15, (byte)0xD2, (byte)0x15, (byte)0x4F, 
-	        (byte)0x16, (byte)0xA6, (byte)0x88, (byte)0x3C*/
-			(byte)0x00, (byte)0x01, (byte)0x02, (byte)0x03, (byte)0x04, (byte)0x05, (byte)0x06, (byte)0x07, (byte)0x08, (byte)0x09, (byte)0x0a, (byte)0x0b, (byte)0x0c, (byte)0x0d, (byte)0x0e, (byte)0x0f
-	};
+			(byte)0x00, (byte)0x01, (byte)0x02, (byte)0x03, 
+			(byte)0x04, (byte)0x05, (byte)0x06, (byte)0x07, 
+			(byte)0x08, (byte)0x09, (byte)0x0a, (byte)0x0b, 
+			(byte)0x0c, (byte)0x0d, (byte)0x0e, (byte)0x0f
+	};*/
+	private static byte[] CK = new byte[16];
 	
 	//for the method mixColumn
 	//matrix to be multiplied with the plaintext matrix
@@ -177,7 +178,7 @@ public class AES {
 	private static byte[] inv_shiftRow(byte[] msgblock) {
 		byte[] res = new byte[msgblock.length];
 		//int[] order = {0, 1, 2, 3, 7, 4, 5, 6, 10, 11, 8, 9, 13, 14, 15, 12};
-		int[] order = {0, 7, 10, 13, 1, 4, 11, 14, 2, 5, 8, 15, 3, 6, 9, 12};
+		int[] order = {0, 13, 10, 7, 4, 1, 14, 11, 8, 5, 2, 15, 12, 9, 6, 3};
 		for(int i = 0; i<16; i++) res[i] = msgblock[order[i]];
 		return res;
 	}
@@ -204,10 +205,10 @@ public class AES {
 			byte[] temp = {0, 0, 0, 0};
 			for(int j=0; j<4; j++) {
 				for(int k=0; k<4; k++) {
-					temp[j] = (byte) (temp[j] ^ x_time(b[4*k+i], iMK[j][k]));
+					temp[j] = (byte) (temp[j] ^ x_time(b[4*i+k], iMK[j][k]));
 				}
 			}
-			for(int l=0; l<4; l++) bb[4*l+i] = temp[l];
+			for(int l=0; l<4; l++) bb[4*i+l] = temp[l];
 		}
 		return bb;
 	}
@@ -297,8 +298,6 @@ public class AES {
 		
 		byte[] temp = addRoundKey(c, 9);
 		for(int i = 0; i < 10; i++) { //need to fix the order of methods
-			for(int j = 0; j < temp.length; j++) System.out.printf("%02x ", temp[j]);
-			System.out.println();
 			temp = inv_shiftRow(temp);
 			temp = inv_subByte(temp);
 			if(i!=9) {
@@ -344,7 +343,8 @@ public class AES {
 		return res;
 	}
 	
-	public static void test(byte[] testText) {
+	public static void test(byte[] testText, byte[] key) {
+		System.arraycopy(key, 0, CK, 0, 16);
 		sinit();
 		System.out.println("input::\n" + hex(testText));
 		byte[] cipher = encrypt(padding(testText));
@@ -356,9 +356,10 @@ public class AES {
 	public static void main(String args[]) {
 		sinit();
 		byte[] tester = parseBytes("00112233445566778899aabbccddeeff");
+		byte[] key = parseBytes("000102030405060708090a0b0c0d0e0f");
 		//tester = encryptBlock(tester);
 		//tester = padding(tester);
-		test(tester);
+		test(tester, key);
 		//System.out.println(hex(tester));
 	}
 }
